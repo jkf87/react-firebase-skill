@@ -46,11 +46,20 @@ All notable changes to the React Firebase Deployment Skill.
   - Creates `.env` with actual Firebase config
   - Creates `.env.example` with placeholders
 
+- **Authentication automation with fallback** (Phase 6)
+  - Attempts API-based activation via curl + OAuth token
+  - Falls back to direct Console link if token unavailable
+  - **Critical rebuild step** after Auth activation to prevent API errors
+  - Verification with curl test to confirm Auth is working
+
 #### Fixed
 - **Issue**: Skill was not executing commands, only showing documentation
 - **Issue**: Firebase CLI was never installed automatically
 - **Issue**: User had to manually run all Firebase commands
 - **Issue**: No validation that commands succeeded
+- **Issue**: Authentication not automated (only manual Console steps)
+- **Issue**: Missing rebuild after Auth activation caused "Firebase API key invalid" errors
+- **Issue**: No verification step to confirm Auth is working
 
 #### Technical Details
 

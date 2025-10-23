@@ -308,34 +308,59 @@ See `firebase-cli.md` for complete Firebase CLI workflow.
 
 ### Phase 6: Authentication Setup
 
-⚠️ **CLI Limitation**: Authentication providers cannot be enabled via CLI (OAuth2 requirement).
+19. **Attempt automatic Authentication activation**
 
-19. **Manual Console steps required**
+    First, try to enable Identity Toolkit API (required for Authentication):
 
-    Provide these instructions to user:
+    Execute: `curl -X POST "https://serviceusage.googleapis.com/v1/projects/<project-id>/services/identitytoolkit.googleapis.com:enable" -H "Authorization: Bearer $(npx firebase login:ci --print-token 2>/dev/null || npx firebase login --print-token 2>/dev/null)"`
 
-    **Email/Password Authentication**:
-    1. Visit https://console.firebase.google.com/project/[project-id]/authentication
-    2. Click "Get started" button
-    3. Click "Sign-in method" tab
-    4. Click "Email/Password" provider
-    5. Enable "Email/Password" toggle
-    6. Click "Save"
+    **If this fails** (no OAuth token available):
 
-    **Google Sign-in** (optional):
-    1. Same page, click "Google" provider
-    2. Enable toggle
-    3. Select project support email from dropdown
-    4. Click "Save"
+    ⚠️ **Manual Console steps required** (30 seconds):
 
-20. **Verify authentication**
-
-    Test locally:
-    ```bash
-    npm run dev
+    Provide direct link to user:
+    ```
+    🔗 Click here to enable Authentication:
+    https://console.firebase.google.com/project/<project-id>/authentication/providers
     ```
 
-    Test signup flow, verify user appears in Authentication console.
+    **Email/Password Authentication**:
+    1. Click "Email/Password" provider
+    2. Enable toggle
+    3. Click "Save"
+
+    **Google Sign-in** (optional):
+    1. Click "Google" provider
+    2. Enable toggle
+    3. Select project support email
+    4. Click "Save"
+
+20. **Rebuild and redeploy after Auth activation**
+
+    **CRITICAL**: After enabling Authentication, must rebuild to include API changes.
+
+    Execute: `npm run build`
+
+    Then execute: `npx firebase deploy --only hosting --project <project-id>`
+
+    **Validation**:
+    - Parse output for deployment success
+    - Report new deployment URL to user
+
+21. **Verify authentication**
+
+    Execute: `npm run dev` in background
+
+    Report to user: "Test at http://localhost:5173 or https://<project-id>.web.app"
+
+    **Test with curl**:
+    ```bash
+    curl -X POST 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=<api-key-from-env>' \
+      -H 'Content-Type: application/json' \
+      -d '{"email":"test@example.com","password":"test123","returnSecureToken":true}'
+    ```
+
+    **Validation**: If response contains "idToken", authentication is working.
 
 ### Phase 7: Validation
 
