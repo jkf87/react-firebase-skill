@@ -2,6 +2,79 @@
 
 All notable changes to the React Firebase Deployment Skill.
 
+## [3.2.0] - 2025-10-23
+
+### 🚀 Major Improvement - Firebase-First Workflow
+
+**Problem**: Previous workflow created React project first with dummy code, then overwrote files with Firebase config later. This was inefficient and caused unnecessary file operations.
+
+**User feedback**: "프론트엔드를 짤때 더미 코드로 짜고 다시 그걸 firebase에서 덮어써서 배포하는데, 처음부터 firebase 프로젝트를 만들어서 놓고 그걸 가져오면 쉬울거같은데?"
+
+#### Changed - Workflow Order Completely Reversed
+
+**Before (v3.1.0)**:
+1. Create React project (dummy)
+2. Install dependencies
+3. Check Firebase CLI
+4. Create Firebase project
+5. Get Firebase config
+6. **Overwrite** dummy files with real config
+7. Deploy
+
+**After (v3.2.0)**:
+1. **Get project name from user**
+2. **Check Firebase CLI**
+3. **Create Firebase project** ← Firebase FIRST
+4. **Register web app**
+5. **Get Firebase config** ← Config ready BEFORE React project
+6. **Create React project** ← Now with real config from the start
+7. Install dependencies
+8. **Write .env with real values** ← No dummy values ever created
+9. Create Firebase config files
+10. Deploy
+
+#### Impact
+
+- ✅ **No file overwriting**: Firebase config written once, correctly
+- ✅ **No dummy code**: React project starts with real config
+- ✅ **Clearer workflow**: Firebase → React → Deploy (linear)
+- ✅ **Faster execution**: Fewer file operations
+- ✅ **Better user experience**: User sees Firebase project created first
+
+#### Removed - Existing Project Option
+
+**Before (v3.1.0)**:
+```markdown
+**Ask user ONLY if**:
+- You detect they already have a Firebase project
+- They explicitly mention "use my existing project"
+```
+
+**After (v3.2.0)**:
+```markdown
+**ALWAYS create a NEW Firebase project**. Never use existing project.
+```
+
+**Why**: User explicitly requested "firebase는 새 프로젝트로 만들어야해" (Firebase must always create new project).
+
+#### Technical Details
+
+**Step reordering**:
+- Step 1: Get project details (was Step 1, unchanged)
+- Step 2: Check Firebase CLI (was Step 4, moved up)
+- Step 3: Create Firebase project (was Step 5, moved up)
+- Step 4: Register web app (was Step 6, moved up)
+- Step 5: Get Firebase config (was Step 7, moved up)
+- Step 6: Create React project (was Step 2, moved down)
+- Step 7: Install dependencies (was Step 3, moved down)
+- Step 8: Create .env with real values (was Step 8, now uses Step 5 config)
+
+**Reference updates**:
+- `.env` creation references Step 5 (not Step 7)
+- `.firebaserc` references Step 3 project ID (not Step 5)
+
+---
+
 ## [3.1.0] - 2025-10-23
 
 ### 🔥 Critical Fix - Skill Not Triggering on First Prompt
@@ -298,6 +371,7 @@ Verify `package.json` exists and contains "react" in dependencies.
 
 | Version | Date | Type | Description |
 |---------|------|------|-------------|
+| 3.2.0 | 2025-10-23 | Minor | Firebase-first workflow (no dummy code) |
 | 3.1.0 | 2025-10-23 | Patch | Fixed skill not triggering on first prompt |
 | 3.0.0 | 2025-10-23 | Breaking | Imperative workflow format (actually executes) |
 | 2.1.0 | 2025-10-23 | Deprecated | Command execution (didn't work) |

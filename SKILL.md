@@ -40,19 +40,11 @@ Automates complete Firebase deployment in one shot:
 
 ## Creating a New React + Firebase Application
 
+**WORKFLOW ORDER**: Firebase FIRST, then React project with config baked in.
+
 When the user requests a Firebase app (todo, chat, any app with backend):
 
-### Step 1: Decide on Firebase Project
-
-**IMPORTANT**: Check if user wants to use existing Firebase project or create new one.
-
-**Default behavior**: Create a NEW Firebase project (don't ask user, just do it).
-
-**Ask user ONLY if**:
-- You detect they already have a Firebase project in current directory (`.firebaserc` exists)
-- They explicitly mention "use my existing project"
-
-**If creating NEW project**:
+### Step 1: Get Project Details
 
 Ask the user for:
 - Project name (lowercase, no spaces, e.g., "todo-app")
@@ -62,50 +54,8 @@ Generate these values:
 - `<project-name>`: Use user's project name
 - `<display-name>`: Use user's display name
 - `<app-name>`: Use `<display-name> + " Web"`
-- `<project-id>`: Construct as `<project-name>-<timestamp>` (run `date +%s` to get timestamp)
 
-**If using EXISTING project**:
-
-List available projects:
-```bash
-npx firebase projects:list
-```
-
-Show list to user and ask which project to use. Save the project ID they choose.
-
-### Step 2: Create React Project
-
-```bash
-npm create vite@latest <project-name> -- --template react
-cd <project-name>
-npm install
-```
-
-Verify `package.json` exists and contains "react" in dependencies.
-
-### Step 3: Install Dependencies
-
-```bash
-npm install firebase
-npm install -D tailwindcss@^3 postcss autoprefixer
-npx tailwindcss init -p
-```
-
-**Critical**: Use Tailwind v3 (not v4) - v4 has CLI compatibility issues.
-
-Update `tailwind.config.js` content array:
-```javascript
-content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}']
-```
-
-Update `src/index.css` - prepend these lines:
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-```
-
-### Step 4: Check Firebase CLI
+### Step 2: Check Firebase CLI
 
 ```bash
 npx firebase --version
@@ -128,11 +78,9 @@ npx firebase login
 
 This opens a browser for authentication.
 
-### Step 5: Create Firebase Project
+### Step 3: Create Firebase Project
 
-**ONLY IF creating NEW project** (Step 1 determined this).
-
-**Skip this step if using existing project.**
+**ALWAYS create a NEW Firebase project**. Never use existing project.
 
 Generate timestamp and construct project ID:
 ```bash
@@ -159,7 +107,7 @@ npx firebase login
 # Then retry the create command
 ```
 
-### Step 6: Register Web App
+### Step 4: Register Web App
 
 ```bash
 npx firebase apps:create WEB "<app-name>" --project <project-id>
@@ -167,7 +115,7 @@ npx firebase apps:create WEB "<app-name>" --project <project-id>
 
 Parse output for the App ID (format: `1:123456789:web:abcdef123456`). Save this app ID.
 
-### Step 7: Get Firebase Configuration
+### Step 5: Get Firebase Configuration
 
 ```bash
 npx firebase apps:sdkconfig WEB <app-id> --project <project-id>
@@ -181,18 +129,52 @@ This outputs JSON with these fields:
 - `messagingSenderId`
 - `appId`
 
-**Critical**: Parse all these values and use them in the next step.
+**Critical**: Parse all these values and save them. You'll use these when creating React project.
 
-### Step 8: Create Environment File
+### Step 6: Create React Project
 
-Create `.env` with the actual values from step 7:
+**NOW** create React project with Firebase config ready:
+
+```bash
+npm create vite@latest <project-name> -- --template react
+cd <project-name>
+npm install
+```
+
+Verify `package.json` exists and contains "react" in dependencies.
+
+### Step 7: Install Dependencies
+
+```bash
+npm install firebase
+npm install -D tailwindcss@^3 postcss autoprefixer
+npx tailwindcss init -p
+```
+
+**Critical**: Use Tailwind v3 (not v4) - v4 has CLI compatibility issues.
+
+Update `tailwind.config.js` content array:
+```javascript
+content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}']
+```
+
+Update `src/index.css` - prepend these lines:
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+### Step 8: Create Environment File with Real Values
+
+Create `.env` with the actual values from Step 5 (Firebase config):
 ```env
-VITE_FIREBASE_API_KEY=<apiKey-from-step-7>
-VITE_FIREBASE_AUTH_DOMAIN=<authDomain-from-step-7>
-VITE_FIREBASE_PROJECT_ID=<projectId-from-step-7>
-VITE_FIREBASE_STORAGE_BUCKET=<storageBucket-from-step-7>
-VITE_FIREBASE_MESSAGING_SENDER_ID=<messagingSenderId-from-step-7>
-VITE_FIREBASE_APP_ID=<appId-from-step-7>
+VITE_FIREBASE_API_KEY=<apiKey-from-step-5>
+VITE_FIREBASE_AUTH_DOMAIN=<authDomain-from-step-5>
+VITE_FIREBASE_PROJECT_ID=<projectId-from-step-5>
+VITE_FIREBASE_STORAGE_BUCKET=<storageBucket-from-step-5>
+VITE_FIREBASE_MESSAGING_SENDER_ID=<messagingSenderId-from-step-5>
+VITE_FIREBASE_APP_ID=<appId-from-step-5>
 ```
 
 Verify the file was created correctly:
@@ -212,7 +194,7 @@ VITE_FIREBASE_APP_ID=your_app_id
 
 ### Step 9: Create Firebase Config Files
 
-Create `.firebaserc` with project ID from step 5:
+Create `.firebaserc` with project ID from Step 3:
 ```json
 {
   "projects": {
