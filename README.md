@@ -13,239 +13,479 @@ This skill provides complete automation for:
 
 **Time savings**: Reduces 2-3 hours of manual setup to 10-15 minutes.
 
-## Features
-
-### Three Primary Workflows
-
-1. **New Project Creation** - Complete automation from empty directory to live deployment
-2. **Adding Firebase to Existing Project** - Integrate Firebase into existing React apps
-3. **TypeScript Conversion** - Migrate JavaScript implementation to TypeScript
-
-### What You Get
-
-- ✅ React 19 + Vite 7 + Tailwind CSS 3
-- ✅ Firebase project with Firestore database
-- ✅ User-specific security rules configured
-- ✅ Live deployment on Firebase Hosting
-- ✅ Authentication setup guide (Email/Password + Google)
-- ✅ Real-time data synchronization
-- ✅ Complete component implementations
-- ✅ Custom hooks for Firestore operations
-
 ## Installation
 
-### For Plugin Marketplace
+### Via Claude Code Plugin Marketplace
 
-This skill is designed to be distributed via Claude Code plugin marketplace.
+```bash
+# 1. Add marketplace
+/plugin marketplace add jkf87/react-firebase-skill
 
-**Directory structure**:
-```
-react-firebase-skill/
-├── SKILL.md                     # Main skill workflow
-├── firebase-cli.md              # Firebase CLI reference
-├── component-patterns.md        # Implementation patterns
-├── README.md                    # This file
-├── LICENSE.txt                  # License
-└── guides/
-    ├── typescript-setup.md
-    ├── advanced-security.md
-    └── nextjs-variant.md
+# 2. Install plugin
+/plugin install react-firebase
+
+# 3. Restart Claude Code (if needed)
+# Cmd+Shift+P (Mac) or Ctrl+Shift+P (Windows/Linux)
+# Select "Developer: Reload Window"
 ```
 
-### Manual Installation
+### Local Installation
 
-1. Copy entire directory to `.claude/skills/react-firebase/`
-2. Skill will be automatically detected by Claude Code
-3. Invoke by requesting React + Firebase project creation
+```bash
+# 1. Clone repository
+git clone https://github.com/jkf87/react-firebase-skill.git
+cd react-firebase-skill
+
+# 2. Copy to Claude Code skills directory
+mkdir -p ~/.claude/skills/react-firebase
+cp -r . ~/.claude/skills/react-firebase/
+
+# 3. Verify installation
+/plugin list
+```
+
+### Verify Installation
+
+Check if skill is properly installed:
+
+```bash
+# In Claude Code
+/plugin list
+
+# Look for "react-firebase" in output
+# ✓ react-firebase (3.2.0) - enabled
+```
 
 ## Quick Start
 
-### Using the Skill
+### Usage
 
 Trigger this skill by requesting:
-- "Create a React app with Firebase backend"
-- "Build a todo app using React and Firestore"
-- "Set up a React + Firebase project with authentication"
 
-The skill will automatically:
-1. Create Vite React project
-2. Configure Tailwind CSS
-3. Create Firebase project via CLI
-4. Deploy Firestore database with security rules
-5. Generate authentication components
-6. Deploy to Firebase Hosting
-7. Provide manual authentication setup instructions
+**English**:
+```
+"Create a React app with Firebase backend"
+"Build a todo app using React and Firestore"
+"Set up a React + Firebase project with authentication"
+"Make a chat app with Firebase"
+```
 
-## Documentation
+**Korean**:
+```
+"React와 Firebase로 todo 앱 만들어줘"
+"Firebase 백엔드 사용해서 채팅 앱 만들어줘"
+"firebase skill을 사용해서 블로그 앱 만들어줘"
+```
 
-### Core Files
+### Automated Process
 
-- **SKILL.md** - Main entry point with 3 complete workflows
-  - Workflow 1: New project creation (22 steps)
-  - Workflow 2: Adding Firebase to existing project
-  - Workflow 3: TypeScript conversion
+The skill automatically:
 
-- **firebase-cli.md** - Firebase CLI complete reference
-  - Project creation commands
-  - Web app registration
-  - Firestore deployment
-  - Hosting deployment
-  - Troubleshooting guide
+1. **Creates Firebase Project** (CLI auto-execution)
+   ```bash
+   npx firebase projects:create your-app-1729680000
+   ```
 
-- **component-patterns.md** - React + Firebase implementation patterns
-  - Firebase configuration
-  - Authentication components (Login, SignUp)
-  - Layout components (Header)
-  - Custom hooks (useFirestore, useTodos)
-  - App structure with auth state
-  - Firestore integration patterns
+2. **Extracts Firebase Config** (real API keys)
+   ```bash
+   npx firebase apps:sdkconfig WEB <app-id>
+   ```
 
-### Advanced Guides
+3. **Creates React Project** (Vite + Tailwind CSS)
+   ```bash
+   npm create vite@latest your-app -- --template react
+   ```
 
-- **guides/typescript-setup.md**
-  - TypeScript configuration for Vite + React
-  - Firebase type definitions
-  - Environment variable types
-  - Component prop types
+4. **Integrates Firebase** (with real config values)
+   - Writes real API keys to `.env`
+   - Creates Firebase config files
+   - Deploys Firestore security rules
 
-- **guides/advanced-security.md**
-  - Email verification implementation
-  - Custom claims (role-based access)
-  - Field-level security rules
-  - Rate limiting patterns
+5. **Deploys Firestore**
+   ```bash
+   npx firebase deploy --only firestore
+   ```
 
-- **guides/nextjs-variant.md**
-  - Next.js App Router setup
-  - Server vs Client components
-  - Environment variable differences
-  - Static export configuration
-  - When to choose Next.js vs Vite
+6. **Deploys Hosting**
+   ```bash
+   npm run build
+   npx firebase deploy --only hosting
+   ```
+
+7. **Provides Live URL**
+   ```
+   ✅ Deployed: https://your-app-1729680000.web.app
+   ```
+
+## Features
+
+### Fully Automated
+
+- ✅ Firebase CLI auto-install and login check
+- ✅ Firebase project auto-creation (always new project)
+- ✅ Web app auto-registration
+- ✅ **Real API keys auto-extracted** (no placeholders!)
+- ✅ Firebase config auto-integrated into React project
+- ✅ Firestore security rules auto-deployed
+- ✅ Firebase Hosting auto-deployed
+- ✅ **One command to completion**
+
+### Tech Stack Included
+
+- **Frontend**: React 19 + Vite 7
+- **Styling**: Tailwind CSS 3
+- **Backend**: Firebase Firestore
+- **Authentication**: Firebase Authentication
+- **Hosting**: Firebase Hosting
+- **Security**: User-specific data isolation rules
+
+### Generated Components
+
+Complete implementations auto-generated by the skill:
+
+- 🔐 **Auth Components**
+  - `Login.jsx` - Email/Password + Google sign-in
+  - `SignUp.jsx` - User registration
+  - `Header.jsx` - Navigation + logout
+
+- 📦 **Layout Components**
+  - Responsive header
+  - Auth state management
+
+- 🔌 **Custom Hooks**
+  - `useTodos.js` - Firestore CRUD operations
+  - Real-time data synchronization
+  - Error handling
+
+- ⚙️ **Firebase Config**
+  - `src/firebase/config.js` - Firebase initialization
+  - Environment variable management
+  - Firestore, Auth exports
+
+## Workflows
+
+### Workflow 1: New Project Creation
+
+**From empty directory → Live URL with complete automation**
+
+```
+User: "Create a todo app with Firebase"
+
+Claude:
+1. Asks for project name
+2. Checks/installs Firebase CLI
+3. Creates Firebase project ← First!
+4. Registers web app
+5. Gets Firebase config
+6. Creates React project ← Config ready
+7. Installs dependencies
+8. Writes .env with real values
+9. Creates Firebase config files
+10. Deploys Firestore security rules
+11. Implements components (App, Login, Header, etc.)
+12. Builds and deploys to Hosting
+
+Result: https://todo-app-1729680000.web.app ✅
+```
+
+**Duration**: 10-15 minutes (automated)
+
+### Workflow 2: Add Firebase to Existing Project
+
+Integrate Firebase backend into existing React app:
+
+```bash
+# In existing React project directory
+"Add Firebase backend to this project"
+```
+
+Skill automatically:
+- Creates Firebase project
+- Installs Firebase SDK
+- Sets up Firestore
+- Adds auth components
+- Deploys
+
+**Duration**: 5-10 minutes
+
+### Workflow 3: TypeScript Conversion
+
+Migrate JavaScript implementation to TypeScript:
+
+```bash
+"Convert this project to TypeScript"
+```
+
+**Duration**: 15-30 minutes
+
+## Real-World Examples
+
+### Creating a Todo App
+
+```
+User: "Create a todo list app with Firebase. Handle backend, database, and deployment"
+
+Claude:
+✅ npx firebase projects:create todo-app-1729680000 --display-name "Todo App"
+✅ npx firebase apps:create WEB "Todo App Web"
+✅ npx firebase apps:sdkconfig WEB 1:xxx:web:xxx
+   → Extracted API keys
+✅ npm create vite@latest todo-app -- --template react
+✅ npm install firebase
+✅ Write(.env) with real API keys
+✅ Write(src/firebase/config.js) with actual config
+✅ Write(src/App.jsx) with todo CRUD logic
+✅ npx firebase deploy --only firestore:rules
+✅ npm run build
+✅ npx firebase deploy --only hosting
+
+Result: https://todo-app-1729680000.web.app
+```
+
+### Creating a Chat App
+
+```
+User: "Build a real-time chat app with Firebase"
+
+Claude:
+✅ Creates Firebase project
+✅ Creates React project
+✅ Implements real-time message components
+✅ Sets up Firestore real-time listeners
+✅ Deploys
+
+Result: Live chat app
+```
+
+## Firebase-First Workflow (v3.2.0)
+
+### Why Firebase First?
+
+**Old Way (Inefficient)**:
+```
+1. Create React project (dummy code)
+2. Create Firebase project
+3. Get Firebase config
+4. Overwrite dummy files ← Wasteful!
+```
+
+**New Way (Efficient)**:
+```
+1. Create Firebase project ← First!
+2. Get Firebase config
+3. Create React project ← Config ready
+4. Write .env once ← No overwriting!
+```
+
+**Benefits**:
+- ✅ 50% fewer file operations
+- ✅ No placeholder values (real values from start)
+- ✅ Faster execution
+- ✅ Cleaner workflow
 
 ## Key Patterns
 
 ### Vite Environment Variables
+
 ```javascript
-// Correct for Vite
+// ✅ Correct (Vite)
 const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
 
-// Wrong (this is Node.js, not Vite)
+// ❌ Wrong (Node.js pattern)
 const apiKey = process.env.VITE_FIREBASE_API_KEY;
 ```
 
 ### Firestore Timestamps
+
 ```javascript
 import { serverTimestamp } from 'firebase/firestore';
 
-// Correct - server time, timezone-safe
-createdAt: serverTimestamp()
+// ✅ Correct - server time (timezone-safe)
+await addDoc(collection(db, 'todos'), {
+  createdAt: serverTimestamp()
+});
 
-// Wrong - client time, timezone issues
-createdAt: new Date()
+// ❌ Wrong - client time (timezone issues)
+await addDoc(collection(db, 'todos'), {
+  createdAt: new Date()
+});
 ```
 
-### Real-time Listeners
+### Real-time Listener Cleanup
+
 ```javascript
-// Always cleanup to prevent memory leaks
+// ✅ Always unsubscribe to prevent memory leaks
 useEffect(() => {
-  const unsubscribe = onSnapshot(query, callback);
-  return () => unsubscribe(); // Critical cleanup
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    setData(snapshot.docs.map(doc => doc.data()));
+  });
+
+  return () => unsubscribe(); // Required!
 }, []);
 ```
 
-## Limitations
+### User-Specific Data Isolation
 
-### Firebase CLI Cannot Automate Authentication
+```javascript
+// ✅ Always include userId (enables security rules)
+await addDoc(collection(db, 'todos'), {
+  text: 'Buy milk',
+  userId: user.uid,  // Required!
+  createdAt: serverTimestamp()
+});
+```
 
-Authentication providers (Email/Password, Google Sign-in) cannot be enabled via Firebase CLI due to OAuth2 requirements.
+## Security Rules
 
-**Workaround**: Skill provides detailed Console setup instructions with step-by-step guide.
+Auto-applied security rules by the skill:
 
-**Time required**: 2-3 minutes manual setup.
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{collection}/{document} {
+      // Authenticated users can only read their own data
+      allow read: if request.auth != null &&
+                     resource.data.userId == request.auth.uid;
+
+      // Can only create own data
+      allow create: if request.auth != null &&
+                       request.resource.data.userId == request.auth.uid;
+
+      // Can only update/delete own data
+      allow update, delete: if request.auth != null &&
+                               resource.data.userId == request.auth.uid;
+    }
+  }
+}
+```
+
+**Effects**:
+- ✅ User A cannot see User B's data
+- ✅ Unauthenticated users cannot do anything
+- ✅ Applies to all collections
+
+## Troubleshooting
+
+### Tailwind CSS Not Working
+
+**Symptom**: Styles not applied
+
+**Cause**: Tailwind v4 installed (CLI compatibility issue)
+
+**Fix**: Skill automatically installs v3
+```bash
+npm install -D tailwindcss@^3
+```
+
+### Firestore API Not Enabled
+
+**Symptom**: `HTTP Error: 403, Cloud Firestore API has not been used`
+
+**Fix**: Automatically resolved by `firebase deploy --only firestore`
+
+### Authentication Not Configured
+
+**Symptom**: `auth/configuration-not-found`
+
+**Cause**: Auth providers need to be enabled in Firebase Console
+
+**Fix**: Skill provides direct link
+```
+🔗 https://console.firebase.google.com/project/<project-id>/authentication/providers
+```
+
+**Manual work time**: 2-3 minutes
+
+### Google Sign-in Popup Blocked
+
+**Fix**: Allow popups for localhost and Firebase domain in browser
+
+## Time Comparison
+
+| Task | Manual Setup | With This Skill |
+|------|--------------|-----------------|
+| Project creation | 30 min | 2 min |
+| Firebase setup | 45 min | 3 min (auto) |
+| Firestore setup | 30 min | 2 min (auto) |
+| Auth implementation | 60 min | 5 min |
+| Deployment setup | 30 min | 2 min (auto) |
+| **Total** | **2-3 hours** | **10-15 min** |
+
+**Time saved**: Minimum 1.5 hours
 
 ## Dependencies
 
 Tested versions:
+- Node.js 18+
 - React 19
 - Vite 7
 - Firebase SDK 12
-- Firebase CLI 14
+- Firebase CLI 14+
 - Tailwind CSS 3
-- Node.js 18+
-
-## Time Estimates
-
-| Workflow | Duration |
-|----------|----------|
-| New project (Workflow 1) | 10-15 min |
-| Add to existing (Workflow 2) | 5-10 min |
-| TypeScript conversion (Workflow 3) | 15-30 min |
-
-**Compare to manual setup**: 2-3 hours
-
-## Common Issues
-
-### Tailwind CSS v4 Incompatibility
-**Fix**: Skill automatically uses Tailwind v3 (v4 has CLI compatibility issues)
-
-### Firestore API Not Enabled
-**Fix**: Auto-resolved by `firebase deploy --only firestore`
-
-### Authentication Not Configured
-**Fix**: Follow Phase 6 manual setup instructions provided by skill
-
-### Google Sign-in Popup Blocked
-**Fix**: Skill instructs user to allow popups for localhost and Firebase domain
 
 ## Version History
 
-- **2.0.0** (2025-10-22) - Complete restructure following official skill format
-  - Separated workflows into SKILL.md
-  - Created firebase-cli.md reference
-  - Created component-patterns.md implementation guide
-  - Added advanced guides (TypeScript, security, Next.js)
-  - Removed redundant content (progressive disclosure)
+### Latest: 3.2.0 (2025-10-23)
 
-- **1.0.0** (2025-10-21) - Initial release
+**Major improvements**:
+- 🚀 Firebase-First workflow
+- ✅ Removed file overwriting (2x efficiency)
+- ✅ Always creates new project
+- ✅ Writes real API keys from start
+
+**Previous versions**:
+- **3.1.0** - Fixed skill not triggering on first prompt
+- **3.0.0** - Imperative workflow format (actually executes)
+- **2.0.0** - Official skill format applied
+- **1.0.0** - Initial release
+
+Details: [CHANGELOG.md](CHANGELOG.md)
+
+## Limitations
+
+### Firebase Authentication Manual Activation
+
+**Issue**: Firebase CLI cannot auto-enable Authentication providers (OAuth2 requirement)
+
+**Solution**:
+1. Skill auto-creates project
+2. Skill provides direct link:
+   ```
+   🔗 https://console.firebase.google.com/project/<project-id>/authentication/providers
+   ```
+3. Click link → Enable Email/Password → Save
+4. Skill auto-redeploys
+
+**Manual work time**: Only 2-3 minutes required
 
 ## License
 
-MIT License
-
-Copyright (c) 2025
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+MIT License - Free to use, modify, and distribute
 
 ## Contributing
 
-This skill follows [Anthropic's Skill Best Practices](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/best-practices):
+This skill follows [Anthropic Skill Best Practices](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/best-practices):
 - Conciseness (removes Claude's existing knowledge)
 - Progressive Disclosure (main file references detailed guides)
-- Clear activation triggers in description
+- Clear activation triggers
 - Validation checklists for each workflow
 
 ## Support
 
 For issues or questions:
-1. Check `SKILL.md` for complete workflows
-2. Check `firebase-cli.md` for CLI command reference
-3. Check `component-patterns.md` for implementation details
+1. Check `SKILL.md` (complete workflows)
+2. Check `firebase-cli.md` (CLI command reference)
+3. Check `component-patterns.md` (implementation details)
 4. Check relevant guides in `guides/` directory
+
+## Links
+
+- **Repository**: https://github.com/jkf87/react-firebase-skill
+- **Issues**: https://github.com/jkf87/react-firebase-skill/issues
+- **Documentation**: [SKILL.md](SKILL.md)
+- **Changelog**: [CHANGELOG.md](CHANGELOG.md)
+- **Korean README**: [README.ko.md](README.ko.md)
 
 ---
 
