@@ -2,7 +2,93 @@
 
 All notable changes to the React Firebase Deployment Skill.
 
-## [2.1.0] - 2025-10-23
+## [3.0.0] - 2025-10-23
+
+### 🚨 BREAKING CHANGE - Complete SKILL.md Rewrite
+
+**Why**: Previous v2.1.0 format used "Execute:" prefix which Claude interpreted as documentation, not commands to execute. Claude ignored the skill and created files manually.
+
+**Root Cause**: SKILL.md was written as **instructional guide** instead of **imperative workflow**.
+
+#### Changed
+
+- **Complete SKILL.md rewrite** following pptx skill pattern
+- Changed from "Execute: `command`" to direct bash code blocks with workflow instructions
+- Removed "Mandatory first step" and similar weak directives
+- Changed from numbered phases to clear step-by-step workflow
+- Simplified structure: Overview → Steps → Common Issues → Key Patterns
+
+#### Format Transformation
+
+**Before (v2.1.0 - Documentation style)**:
+```markdown
+**Mandatory first step**: Read `firebase-cli.md` completely.
+
+Execute these commands in sequence. Stop if any command fails.
+
+1. **Create React project with Vite**
+
+   Execute: `npm create vite@latest <project-name> -- --template react`
+
+   Then execute: `cd <project-name>`
+```
+
+**After (v3.0.0 - Imperative workflow)**:
+```markdown
+When a user asks you to create a React app with Firebase backend, follow this workflow...
+
+### Step 2: Create React Project
+
+\```bash
+npm create vite@latest <project-name> -- --template react
+cd <project-name>
+npm install
+\```
+
+Verify `package.json` exists and contains "react" in dependencies.
+```
+
+#### Key Differences from v2.1.0
+
+1. **First line sets context**: "When a user asks..." instead of "Automates creation..."
+2. **Direct commands**: Bash blocks instead of "Execute: " prefix
+3. **Inline verification**: "Verify X exists" instead of separate validation sections
+4. **Removed external references**: No "See firebase-cli.md" - everything inline
+5. **Removed phases**: Direct steps 1-21 instead of "Phase 1", "Phase 2", etc.
+
+#### Impact
+
+- ✅ Claude now **executes commands directly** instead of showing documentation
+- ✅ Claude **follows workflow** instead of creating files manually
+- ✅ Claude **uses Firebase CLI** to create real backend
+- ✅ Claude **parses outputs** to extract IDs and config
+- ✅ Complete automation from empty directory to live URL
+
+#### Test Results
+
+**v2.1.0 behavior** (broken):
+- User: "Create todo app with Firebase"
+- Claude: *Creates package.json, firebase.json manually*
+- Claude: *Writes placeholder values in .env*
+- Result: No Firebase backend, manual setup required
+
+**v3.0.0 behavior** (fixed):
+- User: "Create todo app with Firebase"
+- Claude: *Runs npm create vite*
+- Claude: *Runs firebase projects:create*
+- Claude: *Parses SDK config and creates real .env*
+- Result: Live URL with working backend
+
+#### Files Modified
+
+- `SKILL.md` - Complete rewrite (581 lines → 729 lines)
+- Removed references to external files (`firebase-cli.md`, `component-patterns.md`)
+- All Firebase CLI commands now inline with explanations
+- All React components now inline with complete code
+
+---
+
+## [2.1.0] - 2025-10-23 [DEPRECATED]
 
 ### 🚀 Major Changes - Command Execution
 
@@ -142,7 +228,8 @@ All notable changes to the React Firebase Deployment Skill.
 
 | Version | Date | Type | Description |
 |---------|------|------|-------------|
-| 2.1.0 | 2025-10-23 | Major | Command execution automation |
+| 3.0.0 | 2025-10-23 | Breaking | Imperative workflow format (actually executes) |
+| 2.1.0 | 2025-10-23 | Deprecated | Command execution (didn't work) |
 | 2.0.0 | 2025-10-22 | Major | Restructure following official patterns |
 | 1.0.0 | 2025-10-21 | Initial | First public release |
 
@@ -150,7 +237,13 @@ All notable changes to the React Firebase Deployment Skill.
 
 ## Upgrade Guide
 
-### From 2.0.0 to 2.1.0
+### From 2.1.0 to 3.0.0
+
+**Action required**: Reinstall the skill to get working command execution.
+
+v2.1.0 had a critical bug where Claude ignored the skill and created files manually. v3.0.0 fixes this by rewriting SKILL.md in imperative workflow format.
+
+### From 2.0.0 to 3.0.0
 
 **Action required**: Reinstall the skill to get command execution features.
 
@@ -175,7 +268,7 @@ All notable changes to the React Firebase Deployment Skill.
 - Claude: *Shows documentation and command examples*
 - User: *Manually copies and runs each command*
 
-**After (v2.1.0)**:
+**After (v3.0.0)**:
 - User: "Create React Firebase app"
 - Claude: *Executes all commands automatically*
 - Result: *Deployed app with live URL*
@@ -184,10 +277,17 @@ All notable changes to the React Firebase Deployment Skill.
 
 ## Breaking Changes
 
-### v2.1.0
-- SKILL.md format completely changed from documentation to execution
-- Claude now expects to execute commands, not just display them
+### v3.0.0
+- SKILL.md completely rewritten in imperative workflow format
+- Removed external file references (firebase-cli.md, component-patterns.md)
+- All code and commands now inline in SKILL.md
+- Changed from "Execute: " prefix to direct bash code blocks
 - May require Claude Code restart after installation
+
+### v2.1.0 [DEPRECATED]
+- SKILL.md format completely changed from documentation to execution
+- ❌ Bug: Claude ignored "Execute:" prefix and created files manually
+- ❌ Fixed in v3.0.0
 
 ### v2.0.0
 - File structure changed (single file → multiple files)

@@ -9,7 +9,7 @@
       "name": "react-firebase",
       "source": "./",
       "description": "Automates React + Firebase fullstack deployment with command execution. Installs firebase-tools, creates projects, deploys Firestore and Hosting automatically. Use when building React apps with Firebase backend.",
-      "version": "2.1.0",
+      "version": "3.0.0",
       "author": {
         "name": "jkf87"
       },
@@ -30,7 +30,7 @@
     }
   ],
   "metadata": {
-    "description": "React + Firebase fullstack deployment automation with command execution",
-    "version": "2.1.0"
+    "description": "React + Firebase fullstack deployment automation with imperative workflow execution",
+    "version": "3.0.0"
   }
 }

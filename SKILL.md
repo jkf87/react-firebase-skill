@@ -5,496 +5,681 @@ description: "React + Firebase fullstack application creation, deployment, and c
 
 # React Firebase Deployment
 
-Automates creation and deployment of production-ready React applications with Firebase backend (Firestore, Authentication, Hosting).
+When a user asks you to create a React app with Firebase backend, follow this workflow to create a complete fullstack application with authentication, database, and hosting.
 
-**IMPORTANT**: This skill executes commands automatically. It will install dependencies, create Firebase projects, and deploy to production.
+## Overview
 
-## Prerequisites Check
+This skill automates the complete deployment of a React + Firebase application:
+1. Creates React project with Vite
+2. Creates Firebase project via CLI
+3. Deploys Firestore database with security rules
+4. Implements authentication (Email/Password)
+5. Deploys to Firebase Hosting
+6. Provides live production URL
 
-Before starting, verify:
-1. Node.js 18+ installed: `node --version`
-2. npm available: `npm --version`
-3. Git installed (for version control): `git --version`
+**Time**: 10-15 minutes from empty directory to live URL
 
-## Three Primary Workflows
+## Creating a New React + Firebase Application
 
-### 1. Creating New Project from Scratch
-Complete automation from empty directory to live deployment with authentication and database.
+When the user requests a Firebase todo app, chat app, or any React app with backend:
 
-### 2. Adding Firebase to Existing React Project
-Integrate Firebase backend into an existing React/Vite application.
+### Step 1: Get Project Details
 
-### 3. Converting to TypeScript
-Migrate JavaScript implementation to TypeScript with proper Firebase type definitions.
+Ask the user for:
+- Project name (lowercase, no spaces, e.g., "todo-app")
+- Display name for Firebase (e.g., "My Todo App")
 
----
+Generate these values:
+- `<project-name>`: Use user's project name
+- `<display-name>`: Use user's display name
+- `<app-name>`: Use `<display-name> + " Web"`
+- `<project-id>`: Construct as `<project-name>-<timestamp>` (run `date +%s` to get timestamp)
 
-## Workflow 1: New Project Creation
+### Step 2: Create React Project
 
-**Mandatory first step**: Read `firebase-cli.md` completely to understand Firebase project creation and configuration patterns.
-
-**User Input Required**: Ask user for:
-- `<project-name>`: Project directory name (lowercase, no spaces)
-- `<display-name>`: Firebase project display name
-- `<app-name>`: Web app name for Firebase
-
-### Phase 1: Project Initialization
-
-Execute these commands in sequence. Stop if any command fails.
-
-1. **Create React project with Vite**
-
-   Execute: `npm create vite@latest <project-name> -- --template react`
-
-   Then execute: `cd <project-name>`
-
-   Then execute: `npm install`
-
-   **Validation**: Check `package.json` exists and contains "react" dependency.
-
-2. **Setup Tailwind CSS v3**
-
-   Execute: `npm install -D tailwindcss@^3 postcss autoprefixer`
-
-   Then execute: `npx tailwindcss init -p`
-
-   **Critical**: Must use Tailwind v3 (not v4). Version 4 has CLI compatibility issues.
-
-   **Update `tailwind.config.js`**: Replace content array with:
-   ```javascript
-   content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}']
-   ```
-
-   **Update `src/index.css`**: Prepend these lines:
-   ```css
-   @tailwind base;
-   @tailwind components;
-   @tailwind utilities;
-   ```
-
-3. **Install Firebase dependencies**
-
-   Execute: `npm install firebase`
-
-   **Validation**: Check `firebase` appears in `package.json` dependencies.
-
-   **Check firebase-tools installation**:
-
-   Execute: `npx firebase --version`
-
-   If command fails or version < 14.0.0:
-   - Execute: `npm install -g firebase-tools@latest`
-   - Then execute: `npx firebase login` (opens browser for authentication)
-
-### Phase 2: Firebase Project Setup
-
-See `firebase-cli.md` for complete Firebase CLI workflow.
-
-**Before executing**: Ensure user is logged into Firebase:
-- Execute: `npx firebase login:list`
-- If no user listed: Execute `npx firebase login` (browser auth required)
-
-4. **Create Firebase project**
-
-   Generate unique project ID:
-   - Execute: `date +%s` (get timestamp)
-   - Construct project ID: `<project-name>-<timestamp>`
-
-   Execute: `npx firebase projects:create <project-id> --display-name "<display-name>"`
-
-   **Validation**: Parse output for "Firebase project <project-id> is ready!"
-
-   **Save** the project ID from output for all subsequent commands.
-
-5. **Register web application**
-
-   Execute: `npx firebase apps:create WEB "<app-name>" --project <project-id>`
-
-   **Validation**: Parse output for "App ID: 1:xxxxx:web:xxxxx"
-
-   **Extract and save** the app ID from output (format: `1:123456789:web:abcdef123456`).
-
-6. **Retrieve SDK configuration**
-
-   Execute: `npx firebase apps:sdkconfig WEB <app-id> --project <project-id>`
-
-   **Critical**: Parse the entire JSON output containing:
-   - `apiKey`
-   - `authDomain`
-   - `projectId`
-   - `storageBucket`
-   - `messagingSenderId`
-   - `appId`
-
-   **Save all values** - they will be used in step 7.
-
-7. **Create environment file**
-
-   Using values from step 6, create `.env` file with exact values:
-   ```env
-   VITE_FIREBASE_API_KEY=<apiKey-from-step-6>
-   VITE_FIREBASE_AUTH_DOMAIN=<authDomain-from-step-6>
-   VITE_FIREBASE_PROJECT_ID=<projectId-from-step-6>
-   VITE_FIREBASE_STORAGE_BUCKET=<storageBucket-from-step-6>
-   VITE_FIREBASE_MESSAGING_SENDER_ID=<messagingSenderId-from-step-6>
-   VITE_FIREBASE_APP_ID=<appId-from-step-6>
-   ```
-
-   **Validation**: Execute `cat .env` to verify all values are populated.
-
-   Create `.env.example` with placeholder values:
-   ```env
-   VITE_FIREBASE_API_KEY=your_api_key_here
-   VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
-   VITE_FIREBASE_PROJECT_ID=your_project_id
-   VITE_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
-   VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-   VITE_FIREBASE_APP_ID=your_app_id
-   ```
-
-8. **Create Firebase configuration files**
-
-   Create `.firebaserc` using project ID from step 4:
-   ```json
-   {
-     "projects": {
-       "default": "<project-id>"
-     }
-   }
-   ```
-
-   **Validation**: Execute `cat .firebaserc | grep <project-id>` to verify project ID is correct.
-
-   Create `firebase.json`:
-   ```json
-   {
-     "hosting": {
-       "public": "dist",
-       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-       "rewrites": [
-         {
-           "source": "**",
-           "destination": "/index.html"
-         }
-       ]
-     },
-     "firestore": {
-       "rules": "firestore.rules",
-       "indexes": "firestore.indexes.json"
-     }
-   }
-   ```
-
-   **Validation**: Execute `cat firebase.json | grep firestore` to verify both hosting and firestore are configured.
-
-### Phase 3: Firestore Database Configuration
-
-**Mandatory**: Read `component-patterns.md` completely for Firestore integration patterns.
-
-9. **Create Firestore security rules**
-
-   Create `firestore.rules` file with user-specific data isolation:
-   ```
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /{collection}/{document} {
-         allow read: if request.auth != null &&
-                        resource.data.userId == request.auth.uid;
-         allow create: if request.auth != null &&
-                          request.resource.data.userId == request.auth.uid;
-         allow update, delete: if request.auth != null &&
-                                  resource.data.userId == request.auth.uid;
-       }
-     }
-   }
-   ```
-
-   This enforces user-specific data isolation across all collections.
-
-10. **Create indexes file**
-
-    Create `firestore.indexes.json`:
-    ```json
-    {
-      "indexes": [],
-      "fieldOverrides": []
-    }
-    ```
-
-    **Validation**: Execute `cat firestore.indexes.json` to verify JSON is valid.
-
-11. **Deploy Firestore configuration**
-
-    **CRITICAL**: This command creates the Firebase backend. Execute carefully.
-
-    Execute: `npx firebase deploy --only firestore:rules,firestore:indexes --project <project-id>`
-
-    **This command automatically**:
-    - Enables Firestore API (may take 1-2 minutes first time)
-    - Creates Firestore database in default region (us-central)
-    - Applies security rules from `firestore.rules`
-    - Deploys indexes from `firestore.indexes.json`
-
-    **Validation**:
-    - Parse output for "✔ firestore: deployed indexes"
-    - Parse output for "✔ firestore: released rules"
-    - If errors occur, stop and report to user
-
-    **No manual Console steps required** for Firestore setup.
-
-### Phase 4: Application Implementation
-
-**Mandatory first step**: Read `component-patterns.md` completely for implementation details.
-
-12. **Create directory structure**
-    ```bash
-    mkdir -p src/components/Auth
-    mkdir -p src/components/Layout
-    mkdir -p src/firebase
-    mkdir -p src/hooks
-    ```
-
-13. **Implement Firebase configuration**
-
-    Create `src/firebase/config.js` - see `component-patterns.md` for complete implementation.
-
-14. **Implement authentication components**
-
-    Required components:
-    - `src/components/Auth/Login.jsx` - Email/Password + Google sign-in
-    - `src/components/Auth/SignUp.jsx` - User registration
-    - `src/components/Layout/Header.jsx` - Navigation + logout
-
-    See `component-patterns.md` for complete implementations.
-
-15. **Implement feature components with Firestore**
-
-    Create custom hooks (e.g., `src/hooks/useTodos.js`) for Firestore operations.
-    See `component-patterns.md` for patterns.
-
-16. **Update App.jsx with authentication state**
-
-    Implement `onAuthStateChanged` listener - see `component-patterns.md`.
-
-### Phase 5: Deployment
-
-17. **Build for production**
-
-    Execute: `npm run build`
-
-    **Validation**:
-    - Check `dist/` directory exists: Execute `ls dist/`
-    - Verify `dist/index.html` exists: Execute `ls dist/index.html`
-    - If build fails, check console errors and fix before proceeding
-
-18. **Deploy to Firebase Hosting**
-
-    **CRITICAL**: This deploys your application to production.
-
-    Execute: `npx firebase deploy --only hosting --project <project-id>`
-
-    **This command**:
-    - Uploads all files from `dist/` directory
-    - Deploys to Firebase Hosting CDN
-    - Makes app live at `https://<project-id>.web.app`
-
-    **Validation**:
-    - Parse output for "✔ hosting[<project-id>]: release complete"
-    - Parse output for "Hosting URL: https://<project-id>.web.app"
-    - **Extract and save** the deployment URL
-
-    **Report to user**: "✅ Deployed successfully to https://<project-id>.web.app"
-
-### Phase 6: Authentication Setup
-
-19. **Attempt automatic Authentication activation**
-
-    First, try to enable Identity Toolkit API (required for Authentication):
-
-    Execute: `curl -X POST "https://serviceusage.googleapis.com/v1/projects/<project-id>/services/identitytoolkit.googleapis.com:enable" -H "Authorization: Bearer $(npx firebase login:ci --print-token 2>/dev/null || npx firebase login --print-token 2>/dev/null)"`
-
-    **If this fails** (no OAuth token available):
-
-    ⚠️ **Manual Console steps required** (30 seconds):
-
-    Provide direct link to user:
-    ```
-    🔗 Click here to enable Authentication:
-    https://console.firebase.google.com/project/<project-id>/authentication/providers
-    ```
-
-    **Email/Password Authentication**:
-    1. Click "Email/Password" provider
-    2. Enable toggle
-    3. Click "Save"
-
-    **Google Sign-in** (optional):
-    1. Click "Google" provider
-    2. Enable toggle
-    3. Select project support email
-    4. Click "Save"
-
-20. **Rebuild and redeploy after Auth activation**
-
-    **CRITICAL**: After enabling Authentication, must rebuild to include API changes.
-
-    Execute: `npm run build`
-
-    Then execute: `npx firebase deploy --only hosting --project <project-id>`
-
-    **Validation**:
-    - Parse output for deployment success
-    - Report new deployment URL to user
-
-21. **Verify authentication**
-
-    Execute: `npm run dev` in background
-
-    Report to user: "Test at http://localhost:5173 or https://<project-id>.web.app"
-
-    **Test with curl**:
-    ```bash
-    curl -X POST 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=<api-key-from-env>' \
-      -H 'Content-Type: application/json' \
-      -d '{"email":"test@example.com","password":"test123","returnSecureToken":true}'
-    ```
-
-    **Validation**: If response contains "idToken", authentication is working.
-
-### Phase 7: Validation
-
-21. **Run validation checklist**
-
-    - [ ] Local dev server runs: `npm run dev` (no errors)
-    - [ ] Live URL accessible: `https://[project-id].web.app`
-    - [ ] Firestore database exists in Console
-    - [ ] Security rules applied (test unauthorized access)
-    - [ ] Authentication works (signup, login, logout)
-    - [ ] User data isolated (create items as different users)
-    - [ ] No console errors in browser DevTools
-
-22. **Generate user documentation**
-
-    Create these files:
-    - `QUICK_START.md` - Running locally, adding features
-    - `DEPLOYMENT_GUIDE.md` - Firebase configuration, deployment process
-    - `AUTH_SETUP.md` - Authentication activation steps with screenshots
-
----
-
-## Workflow 2: Adding Firebase to Existing Project
-
-Use when integrating Firebase into an existing React application.
-
-1. **Install dependencies**
-   ```bash
-   npm install firebase firebase-tools
-   ```
-
-2. **Follow Phase 2-3** from Workflow 1 (Firebase project setup, Firestore configuration)
-
-3. **Follow Phase 4** from Workflow 1 (application implementation)
-
-4. **Update build configuration if needed**
-
-   Verify `firebase.json` points to correct build output directory:
-   - Vite: `"public": "dist"`
-   - Create React App: `"public": "build"`
-   - Next.js (static): `"public": "out"`
-
-5. **Deploy**: Follow Phase 5-7 from Workflow 1
-
----
-
-## Workflow 3: TypeScript Conversion
-
-**Mandatory first step**: Read `typescript-setup.md` completely.
-
-Use when converting existing JavaScript implementation to TypeScript.
-
-1. **Install TypeScript dependencies**
-   ```bash
-   npm install -D typescript @types/react @types/react-dom
-   ```
-
-2. **Generate tsconfig.json**
-   ```bash
-   npx tsc --init
-   ```
-
-3. **Follow typescript-setup.md** for:
-   - TypeScript configuration
-   - Firebase type definitions
-   - Environment variable types
-   - Component prop types
-   - Custom hook types
-
-4. **Rename files**
-   ```bash
-   find src -name "*.jsx" -exec sh -c 'mv "$1" "${1%.jsx}.tsx"' _ {} \;
-   find src -name "*.js" -exec sh -c 'mv "$1" "${1%.js}.ts"' _ {} \;
-   ```
-
-5. **Fix type errors incrementally**
-   ```bash
-   npx tsc --noEmit
-   ```
-
----
-
-## Common Issues
-
-### Firestore API Not Enabled
-**Error**: `HTTP Error: 403, Cloud Firestore API has not been used`
-
-**Cause**: Firestore API not activated
-
-**Fix**: Automatically resolved by `firebase deploy --only firestore`
-
-### Authentication Not Configured
-**Error**: `auth/configuration-not-found`
-
-**Cause**: Authentication providers not enabled in Console
-
-**Fix**: Follow Phase 6 manual setup steps
-
-### Tailwind CSS Not Working
-**Error**: Styles not applied
-
-**Cause**: Tailwind v4 installed (CLI incompatibility)
-
-**Fix**:
 ```bash
-npm uninstall tailwindcss
-npm install -D tailwindcss@^3
+npm create vite@latest <project-name> -- --template react
+cd <project-name>
+npm install
+```
+
+Verify `package.json` exists and contains "react" in dependencies.
+
+### Step 3: Install Dependencies
+
+```bash
+npm install firebase
+npm install -D tailwindcss@^3 postcss autoprefixer
 npx tailwindcss init -p
 ```
 
-### Google Sign-in Popup Blocked
-**Error**: Popup window doesn't open
+**Critical**: Use Tailwind v3 (not v4) - v4 has CLI compatibility issues.
 
-**Cause**: Browser blocking popup
+Update `tailwind.config.js` content array:
+```javascript
+content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}']
+```
 
-**Fix**: Instruct user to allow popups for localhost and Firebase domain
+Update `src/index.css` - prepend these lines:
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
 
-### Environment Variables Not Loading
-**Error**: `undefined` values in config
+### Step 4: Check Firebase CLI
 
-**Cause**: Missing `VITE_` prefix or wrong variable name
+```bash
+npx firebase --version
+```
 
-**Fix**: All Vite environment variables must start with `VITE_`
+If command fails or version < 14.0.0:
+```bash
+npm install -g firebase-tools@latest
+```
 
----
+Check Firebase login status:
+```bash
+npx firebase login:list
+```
 
-## Key Non-Obvious Patterns
+If no user listed, login now:
+```bash
+npx firebase login
+```
+
+This opens a browser for authentication.
+
+### Step 5: Create Firebase Project
+
+Generate timestamp and construct project ID:
+```bash
+date +%s
+# Use output to create: <project-name>-<timestamp>
+```
+
+Create the Firebase project:
+```bash
+npx firebase projects:create <project-id> --display-name "<display-name>"
+```
+
+**Critical**: Parse the output for "Firebase project <project-id> is ready!" to confirm success. Save this project ID for all subsequent commands.
+
+### Step 6: Register Web App
+
+```bash
+npx firebase apps:create WEB "<app-name>" --project <project-id>
+```
+
+Parse output for the App ID (format: `1:123456789:web:abcdef123456`). Save this app ID.
+
+### Step 7: Get Firebase Configuration
+
+```bash
+npx firebase apps:sdkconfig WEB <app-id> --project <project-id>
+```
+
+This outputs JSON with these fields:
+- `apiKey`
+- `authDomain`
+- `projectId`
+- `storageBucket`
+- `messagingSenderId`
+- `appId`
+
+**Critical**: Parse all these values and use them in the next step.
+
+### Step 8: Create Environment File
+
+Create `.env` with the actual values from step 7:
+```env
+VITE_FIREBASE_API_KEY=<apiKey-from-step-7>
+VITE_FIREBASE_AUTH_DOMAIN=<authDomain-from-step-7>
+VITE_FIREBASE_PROJECT_ID=<projectId-from-step-7>
+VITE_FIREBASE_STORAGE_BUCKET=<storageBucket-from-step-7>
+VITE_FIREBASE_MESSAGING_SENDER_ID=<messagingSenderId-from-step-7>
+VITE_FIREBASE_APP_ID=<appId-from-step-7>
+```
+
+Verify the file was created correctly:
+```bash
+cat .env
+```
+
+Create `.env.example` with placeholders:
+```env
+VITE_FIREBASE_API_KEY=your_api_key_here
+VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+```
+
+### Step 9: Create Firebase Config Files
+
+Create `.firebaserc` with project ID from step 5:
+```json
+{
+  "projects": {
+    "default": "<project-id>"
+  }
+}
+```
+
+Verify:
+```bash
+cat .firebaserc | grep <project-id>
+```
+
+Create `firebase.json`:
+```json
+{
+  "hosting": {
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}
+```
+
+### Step 10: Create Firestore Security Rules
+
+Create `firestore.rules`:
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{collection}/{document} {
+      allow read: if request.auth != null &&
+                     resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+                       request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+                               resource.data.userId == request.auth.uid;
+    }
+  }
+}
+```
+
+Create `firestore.indexes.json`:
+```json
+{
+  "indexes": [],
+  "fieldOverrides": []
+}
+```
+
+Verify:
+```bash
+cat firestore.indexes.json
+```
+
+### Step 11: Deploy Firestore
+
+**Critical step**: This command creates the Firestore database and applies security rules.
+
+```bash
+npx firebase deploy --only firestore:rules,firestore:indexes --project <project-id>
+```
+
+This automatically:
+- Enables Firestore API (takes 1-2 minutes first time)
+- Creates Firestore database in us-central region
+- Applies security rules
+- Deploys indexes
+
+Parse output for:
+- "✔ firestore: deployed indexes"
+- "✔ firestore: released rules"
+
+If errors occur, stop and report to user. Otherwise, Firestore is ready.
+
+### Step 12: Create Directory Structure
+
+```bash
+mkdir -p src/components/Auth
+mkdir -p src/components/Layout
+mkdir -p src/firebase
+mkdir -p src/hooks
+```
+
+### Step 13: Implement Firebase Config
+
+Create `src/firebase/config.js`:
+```javascript
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
+};
+
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+```
+
+**Critical**: Use `import.meta.env.VITE_*` for Vite environment variables (NOT `process.env`).
+
+### Step 14: Implement Authentication Components
+
+Create `src/components/Auth/Login.jsx`:
+```javascript
+import { useState } from 'react';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../firebase/config';
+
+export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      if (isSignUp) {
+        await createUserWithEmailAndPassword(auth, email, password);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md w-96">
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          {isSignUp ? 'Sign Up' : 'Login'}
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          />
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+          >
+            {isSignUp ? 'Sign Up' : 'Login'}
+          </button>
+        </form>
+        <button
+          onClick={() => setIsSignUp(!isSignUp)}
+          className="w-full mt-4 text-blue-500 hover:underline"
+        >
+          {isSignUp ? 'Already have an account? Login' : 'Need an account? Sign Up'}
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+Create `src/components/Layout/Header.jsx`:
+```javascript
+import { signOut } from 'firebase/auth';
+import { auth } from '../../firebase/config';
+
+export default function Header({ user }) {
+  const handleLogout = () => {
+    signOut(auth);
+  };
+
+  return (
+    <header className="bg-blue-600 text-white p-4">
+      <div className="container mx-auto flex justify-between items-center">
+        <h1 className="text-2xl font-bold">My App</h1>
+        <div className="flex items-center gap-4">
+          <span>{user?.email}</span>
+          <button
+            onClick={handleLogout}
+            className="bg-blue-700 px-4 py-2 rounded hover:bg-blue-800"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
+```
+
+### Step 15: Implement Feature Component (Example: Todos)
+
+Create `src/hooks/useTodos.js`:
+```javascript
+import { useState, useEffect } from 'react';
+import { collection, addDoc, deleteDoc, updateDoc, doc, query, where, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase/config';
+
+export function useTodos(userId) {
+  const [todos, setTodos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const q = query(
+      collection(db, 'todos'),
+      where('userId', '==', userId)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const todosData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setTodos(todosData);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [userId]);
+
+  const addTodo = async (text) => {
+    await addDoc(collection(db, 'todos'), {
+      text,
+      completed: false,
+      userId,
+      createdAt: serverTimestamp()
+    });
+  };
+
+  const toggleTodo = async (id, completed) => {
+    await updateDoc(doc(db, 'todos', id), { completed: !completed });
+  };
+
+  const deleteTodo = async (id) => {
+    await deleteDoc(doc(db, 'todos', id));
+  };
+
+  return { todos, loading, addTodo, toggleTodo, deleteTodo };
+}
+```
+
+Create `src/components/TodoList.jsx`:
+```javascript
+import { useState } from 'react';
+import { useTodos } from '../hooks/useTodos';
+
+export default function TodoList({ user }) {
+  const [newTodo, setNewTodo] = useState('');
+  const { todos, loading, addTodo, toggleTodo, deleteTodo } = useTodos(user.uid);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!newTodo.trim()) return;
+    addTodo(newTodo);
+    setNewTodo('');
+  };
+
+  if (loading) {
+    return <div className="text-center p-8">Loading...</div>;
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto p-6">
+      <form onSubmit={handleSubmit} className="mb-6 flex gap-2">
+        <input
+          type="text"
+          value={newTodo}
+          onChange={(e) => setNewTodo(e.target.value)}
+          placeholder="Add a new todo..."
+          className="flex-1 p-2 border rounded"
+        />
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
+        >
+          Add
+        </button>
+      </form>
+      <div className="space-y-2">
+        {todos.map((todo) => (
+          <div key={todo.id} className="flex items-center gap-2 p-3 bg-white rounded shadow">
+            <input
+              type="checkbox"
+              checked={todo.completed}
+              onChange={() => toggleTodo(todo.id, todo.completed)}
+              className="w-5 h-5"
+            />
+            <span className={`flex-1 ${todo.completed ? 'line-through text-gray-400' : ''}`}>
+              {todo.text}
+            </span>
+            <button
+              onClick={() => deleteTodo(todo.id)}
+              className="text-red-500 hover:text-red-700"
+            >
+              Delete
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+**Critical**: Always use `serverTimestamp()` for created dates (not `new Date()`).
+
+### Step 16: Update App.jsx
+
+Create `src/App.jsx`:
+```javascript
+import { useState, useEffect } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './firebase/config';
+import Login from './components/Auth/Login';
+import Header from './components/Layout/Header';
+import TodoList from './components/TodoList';
+
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!user) {
+    return <Login />;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <Header user={user} />
+      <TodoList user={user} />
+    </div>
+  );
+}
+```
+
+**Critical**: Always return unsubscribe function in useEffect to prevent memory leaks.
+
+### Step 17: Build for Production
+
+```bash
+npm run build
+```
+
+Verify build succeeded:
+```bash
+ls dist/
+ls dist/index.html
+```
+
+If build fails, check console errors and fix before proceeding.
+
+### Step 18: Deploy to Firebase Hosting
+
+```bash
+npx firebase deploy --only hosting --project <project-id>
+```
+
+This command:
+- Uploads all files from `dist/` directory
+- Deploys to Firebase Hosting CDN
+- Makes app live at `https://<project-id>.web.app`
+
+Parse output for:
+- "✔ hosting[<project-id>]: release complete"
+- "Hosting URL: https://<project-id>.web.app"
+
+Report to user: "✅ Deployed successfully to https://<project-id>.web.app"
+
+### Step 19: Enable Authentication
+
+Attempt to enable Identity Toolkit API automatically:
+
+```bash
+curl -X POST "https://serviceusage.googleapis.com/v1/projects/<project-id>/services/identitytoolkit.googleapis.com:enable" -H "Authorization: Bearer $(npx firebase login:ci --print-token 2>/dev/null || npx firebase login --print-token 2>/dev/null)"
+```
+
+If this fails (no OAuth token available), provide manual steps to user:
+
+```
+⚠️ Please enable Authentication manually (30 seconds):
+
+1. Click here: https://console.firebase.google.com/project/<project-id>/authentication/providers
+
+2. Click "Email/Password" provider
+3. Enable toggle
+4. Click "Save"
+
+Let me know when done.
+```
+
+### Step 20: Rebuild After Authentication Setup
+
+**Critical**: After enabling Authentication, rebuild to include API changes.
+
+```bash
+npm run build
+npx firebase deploy --only hosting --project <project-id>
+```
+
+Parse output for deployment success and report new URL to user.
+
+### Step 21: Verify Deployment
+
+Test authentication with curl:
+```bash
+curl -X POST 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=<api-key-from-env>' \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"test@example.com","password":"test123","returnSecureToken":true}'
+```
+
+If response contains "idToken", authentication is working.
+
+Report to user:
+```
+✅ Deployment complete!
+
+Live URL: https://<project-id>.web.app
+
+Test the app:
+1. Open the URL above
+2. Click "Sign Up"
+3. Create an account
+4. Add some todos
+
+Your data is secure - each user sees only their own todos.
+```
+
+## Adding Firebase to Existing React Project
+
+When user has existing React app and wants to add Firebase:
+
+1. Run step 3 (install dependencies)
+2. Run steps 4-11 (Firebase project setup and Firestore deployment)
+3. Run steps 12-16 (implement Firebase in app)
+4. Update build config if needed:
+   - Vite: `"public": "dist"` in firebase.json
+   - Create React App: `"public": "build"`
+   - Next.js static: `"public": "out"`
+5. Run steps 17-21 (deploy and verify)
+
+## Common Issues
+
+### Firebase CLI Not Found
+If `npx firebase` fails:
+```bash
+npm install -g firebase-tools@latest
+```
+
+### Authentication Error: configuration-not-found
+User forgot to enable Email/Password in Console. Provide direct link:
+```
+https://console.firebase.google.com/project/<project-id>/authentication/providers
+```
+
+### Environment Variables Undefined
+Check `.env` file uses `VITE_` prefix (not just `FIREBASE_`).
+
+Verify in code: `import.meta.env.VITE_FIREBASE_API_KEY` (NOT `process.env`).
+
+### Firestore Permission Denied
+User not logged in, or security rules not deployed. Re-run:
+```bash
+npx firebase deploy --only firestore:rules --project <project-id>
+```
+
+### Build Fails
+Check Tailwind config has correct content paths:
+```javascript
+content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}']
+```
+
+## Key Patterns
 
 ### Vite Environment Variables
 ```javascript
 // Correct
 const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
 
-// Wrong (this is for Node.js, not Vite)
+// Wrong (Node.js pattern, doesn't work in Vite)
 const apiKey = process.env.VITE_FIREBASE_API_KEY;
 ```
 
@@ -503,78 +688,41 @@ const apiKey = process.env.VITE_FIREBASE_API_KEY;
 import { serverTimestamp } from 'firebase/firestore';
 
 // Correct - server time, consistent across timezones
-await addDoc(collection(db, 'items'), {
-  createdAt: serverTimestamp()
-});
+createdAt: serverTimestamp()
 
 // Wrong - client time, timezone issues
-await addDoc(collection(db, 'items'), {
-  createdAt: new Date()
-});
+createdAt: new Date()
 ```
 
 ### Listener Cleanup
 ```javascript
-// Always return unsubscribe function to prevent memory leaks
 useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
-    setUser(user);
-  });
-
-  return () => unsubscribe(); // Critical: cleanup on unmount
+  const unsubscribe = onAuthStateChanged(auth, callback);
+  return () => unsubscribe(); // Critical - prevents memory leaks
 }, []);
 ```
 
-### Query Ordering Requirements
+### User-Specific Data
 ```javascript
-// If using orderBy, must create composite index
-const q = query(
-  collection(db, 'todos'),
-  where('userId', '==', userId),
-  orderBy('createdAt', 'desc') // Requires index
-);
-
-// Firebase will provide index creation link in console error
+// Always include userId when creating documents
+await addDoc(collection(db, 'todos'), {
+  text: 'Buy milk',
+  userId: user.uid,  // Critical - enables security rules
+  createdAt: serverTimestamp()
+});
 ```
-
----
-
-## Advanced Features
-
-See separate documentation for advanced patterns:
-
-- **Advanced security**: `advanced-security.md`
-  - Email verification
-  - Custom claims (role-based access)
-  - Field-level security rules
-  - Rate limiting
-
-- **Next.js variant**: Use when SSR/SSG needed
-  - Different environment variable pattern (`NEXT_PUBLIC_`)
-  - Client vs Server component considerations
-  - Static export configuration
-
----
-
-## Dependencies
-
-Tested versions:
-- React 19
-- Vite 7
-- Firebase SDK 12
-- Firebase CLI 14
-- Tailwind CSS 3
-- Node.js 18+
 
 ## Time Estimate
 
-- New project (Workflow 1): 10-15 minutes
-- Adding to existing (Workflow 2): 5-10 minutes
-- TypeScript conversion (Workflow 3): 15-30 minutes
+- New project: 10-15 minutes (automated)
+- Add to existing: 5-10 minutes
+- Manual setup: 2-3 hours
 
-Compare to manual setup: 2-3 hours
+## Dependencies
 
----
-
-**Version**: 2.0.0
-**Last Updated**: 2025-10-22
+- React 19
+- Vite 7
+- Firebase SDK 12
+- Firebase CLI 14+
+- Tailwind CSS 3
+- Node.js 18+
