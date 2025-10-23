@@ -2,6 +2,76 @@
 
 All notable changes to the React Firebase Deployment Skill.
 
+## [3.1.0] - 2025-10-23
+
+### 🔥 Critical Fix - Skill Not Triggering on First Prompt
+
+**Problem**: User requested "todo list앱을 만들어주세요 . firebase skill을 사용하고, 백엔드 ,db, 배포를 전부처리해주세요" but Claude didn't use the skill. Claude created files manually with placeholder values instead of running Firebase CLI commands.
+
+**Root Cause**: SKILL.md lacked explicit trigger conditions. Claude didn't recognize when to activate the skill.
+
+#### Added
+
+- **Explicit trigger conditions** at top of SKILL.md:
+  ```markdown
+  **CRITICAL**: When a user asks you to:
+  - "Create a React app with Firebase backend"
+  - "Make a todo app with Firebase"
+  - "Build a [X] app and deploy it with Firebase"
+  - "Use Firebase skill to build..."
+  - Mentions "Firebase" + "backend" + "deploy"
+
+  **YOU MUST immediately follow this skill workflow**
+  ```
+
+- **DO/DO NOT checklist**:
+  - ❌ DO NOT: Create package.json manually
+  - ❌ DO NOT: Write placeholder values like "YOUR_API_KEY"
+  - ❌ DO NOT: Skip Firebase CLI commands
+  - ✅ DO: Run `npx firebase projects:create` to create real project
+  - ✅ DO: Run `npx firebase apps:sdkconfig` to get real API keys
+  - ✅ DO: Run `npx firebase deploy` to deploy
+
+- **New/Existing project logic** (Step 1):
+  - Default behavior: Create NEW Firebase project
+  - Only use existing if `.firebaserc` exists or user explicitly mentions it
+  - Clear instructions for both paths
+
+#### Changed
+
+- **Step 5** now explicitly says "ONLY IF creating NEW project"
+- Added example commands with actual values
+- Added fallback instructions if `firebase login` needed
+
+#### Impact
+
+- ✅ Claude now recognizes trigger keywords in user prompts
+- ✅ Claude sees clear DO/DO NOT instructions upfront
+- ✅ Claude knows to create NEW project by default (not search for existing)
+- ✅ Skill activates on first prompt (not second)
+
+#### Test Case
+
+**Before (v3.0.0)**:
+```
+User: "todo list앱을 만들어주세요 . firebase skill을 사용하고"
+Claude: *Creates package.json, firebase.json manually*
+Claude: *Writes "YOUR_API_KEY" placeholders*
+Result: No Firebase backend created
+```
+
+**After (v3.1.0)**:
+```
+User: "todo list앱을 만들어주세요 . firebase skill을 사용하고"
+Claude: *Sees trigger: "firebase skill"*
+Claude: *Runs npm create vite*
+Claude: *Runs npx firebase projects:create todo-app-<timestamp>*
+Claude: *Runs npx firebase apps:sdkconfig to get real keys*
+Result: Live URL with working backend
+```
+
+---
+
 ## [3.0.0] - 2025-10-23
 
 ### 🚨 BREAKING CHANGE - Complete SKILL.md Rewrite

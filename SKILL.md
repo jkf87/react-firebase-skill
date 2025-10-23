@@ -5,25 +5,54 @@ description: "React + Firebase fullstack application creation, deployment, and c
 
 # React Firebase Deployment
 
-When a user asks you to create a React app with Firebase backend, follow this workflow to create a complete fullstack application with authentication, database, and hosting.
+**CRITICAL**: When a user asks you to:
+- "Create a React app with Firebase backend"
+- "Make a todo app with Firebase"
+- "Build a [X] app and deploy it with Firebase"
+- "Use Firebase skill to build..."
+- Mentions "Firebase" + "backend" + "deploy"
 
-## Overview
+**YOU MUST immediately follow this skill workflow** - do NOT create files manually.
 
-This skill automates the complete deployment of a React + Firebase application:
+## What This Skill Does
+
+Automates complete Firebase deployment in one shot:
 1. Creates React project with Vite
-2. Creates Firebase project via CLI
-3. Deploys Firestore database with security rules
-4. Implements authentication (Email/Password)
+2. Creates Firebase project via CLI (`npx firebase projects:create`)
+3. Extracts real Firebase config via CLI (`npx firebase apps:sdkconfig`)
+4. Deploys Firestore database with security rules
 5. Deploys to Firebase Hosting
 6. Provides live production URL
 
 **Time**: 10-15 minutes from empty directory to live URL
 
+**DO NOT**:
+- ❌ Create package.json manually
+- ❌ Write placeholder values like "YOUR_API_KEY"
+- ❌ Create firebase.json without running CLI commands
+- ❌ Skip Firebase CLI commands and just make files
+
+**DO**:
+- ✅ Run `npx firebase projects:create` to create real project
+- ✅ Run `npx firebase apps:sdkconfig` to get real API keys
+- ✅ Run `npx firebase deploy` to deploy
+- ✅ Provide live URL at the end
+
 ## Creating a New React + Firebase Application
 
-When the user requests a Firebase todo app, chat app, or any React app with backend:
+When the user requests a Firebase app (todo, chat, any app with backend):
 
-### Step 1: Get Project Details
+### Step 1: Decide on Firebase Project
+
+**IMPORTANT**: Check if user wants to use existing Firebase project or create new one.
+
+**Default behavior**: Create a NEW Firebase project (don't ask user, just do it).
+
+**Ask user ONLY if**:
+- You detect they already have a Firebase project in current directory (`.firebaserc` exists)
+- They explicitly mention "use my existing project"
+
+**If creating NEW project**:
 
 Ask the user for:
 - Project name (lowercase, no spaces, e.g., "todo-app")
@@ -34,6 +63,15 @@ Generate these values:
 - `<display-name>`: Use user's display name
 - `<app-name>`: Use `<display-name> + " Web"`
 - `<project-id>`: Construct as `<project-name>-<timestamp>` (run `date +%s` to get timestamp)
+
+**If using EXISTING project**:
+
+List available projects:
+```bash
+npx firebase projects:list
+```
+
+Show list to user and ask which project to use. Save the project ID they choose.
 
 ### Step 2: Create React Project
 
@@ -92,10 +130,15 @@ This opens a browser for authentication.
 
 ### Step 5: Create Firebase Project
 
+**ONLY IF creating NEW project** (Step 1 determined this).
+
+**Skip this step if using existing project.**
+
 Generate timestamp and construct project ID:
 ```bash
 date +%s
 # Use output to create: <project-name>-<timestamp>
+# Example: todo-app-1729680000
 ```
 
 Create the Firebase project:
@@ -103,7 +146,18 @@ Create the Firebase project:
 npx firebase projects:create <project-id> --display-name "<display-name>"
 ```
 
+**Example**:
+```bash
+npx firebase projects:create todo-app-1729680000 --display-name "My Todo App"
+```
+
 **Critical**: Parse the output for "Firebase project <project-id> is ready!" to confirm success. Save this project ID for all subsequent commands.
+
+**If this command fails** with "Permission denied" or "Login required":
+```bash
+npx firebase login
+# Then retry the create command
+```
 
 ### Step 6: Register Web App
 
