@@ -298,6 +298,7 @@ Verify `package.json` exists and contains "react" in dependencies.
 
 | Version | Date | Type | Description |
 |---------|------|------|-------------|
+| 3.1.0 | 2025-10-23 | Patch | Fixed skill not triggering on first prompt |
 | 3.0.0 | 2025-10-23 | Breaking | Imperative workflow format (actually executes) |
 | 2.1.0 | 2025-10-23 | Deprecated | Command execution (didn't work) |
 | 2.0.0 | 2025-10-22 | Major | Restructure following official patterns |
