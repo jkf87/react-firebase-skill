@@ -7,6 +7,15 @@ description: "React + Firebase fullstack application creation, deployment, and c
 
 Automates creation and deployment of production-ready React applications with Firebase backend (Firestore, Authentication, Hosting).
 
+**IMPORTANT**: This skill executes commands automatically. It will install dependencies, create Firebase projects, and deploy to production.
+
+## Prerequisites Check
+
+Before starting, verify:
+1. Node.js 18+ installed: `node --version`
+2. npm available: `npm --version`
+3. Git installed (for version control): `git --version`
+
 ## Three Primary Workflows
 
 ### 1. Creating New Project from Scratch
@@ -24,29 +33,39 @@ Migrate JavaScript implementation to TypeScript with proper Firebase type defini
 
 **Mandatory first step**: Read `firebase-cli.md` completely to understand Firebase project creation and configuration patterns.
 
+**User Input Required**: Ask user for:
+- `<project-name>`: Project directory name (lowercase, no spaces)
+- `<display-name>`: Firebase project display name
+- `<app-name>`: Web app name for Firebase
+
 ### Phase 1: Project Initialization
 
+Execute these commands in sequence. Stop if any command fails.
+
 1. **Create React project with Vite**
-   ```bash
-   npm create vite@latest [project-name] -- --template react
-   cd [project-name]
-   npm install
-   ```
+
+   Execute: `npm create vite@latest <project-name> -- --template react`
+
+   Then execute: `cd <project-name>`
+
+   Then execute: `npm install`
+
+   **Validation**: Check `package.json` exists and contains "react" dependency.
 
 2. **Setup Tailwind CSS v3**
-   ```bash
-   npm install -D tailwindcss@^3 postcss autoprefixer
-   npx tailwindcss init -p
-   ```
 
-   **Critical**: Must use Tailwind v3. Version 4 has CLI compatibility issues.
+   Execute: `npm install -D tailwindcss@^3 postcss autoprefixer`
 
-   Update `tailwind.config.js`:
+   Then execute: `npx tailwindcss init -p`
+
+   **Critical**: Must use Tailwind v3 (not v4). Version 4 has CLI compatibility issues.
+
+   **Update `tailwind.config.js`**: Replace content array with:
    ```javascript
    content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}']
    ```
 
-   Update `src/index.css`:
+   **Update `src/index.css`**: Prepend these lines:
    ```css
    @tailwind base;
    @tailwind components;
@@ -54,59 +73,97 @@ Migrate JavaScript implementation to TypeScript with proper Firebase type defini
    ```
 
 3. **Install Firebase dependencies**
-   ```bash
-   npm install firebase firebase-tools
-   ```
+
+   Execute: `npm install firebase`
+
+   **Validation**: Check `firebase` appears in `package.json` dependencies.
+
+   **Check firebase-tools installation**:
+
+   Execute: `npx firebase --version`
+
+   If command fails or version < 14.0.0:
+   - Execute: `npm install -g firebase-tools@latest`
+   - Then execute: `npx firebase login` (opens browser for authentication)
 
 ### Phase 2: Firebase Project Setup
 
 See `firebase-cli.md` for complete Firebase CLI workflow.
 
-4. **Create Firebase project**
-   ```bash
-   npx firebase projects:create [name]-$(date +%s) --display-name "[Display Name]"
-   ```
+**Before executing**: Ensure user is logged into Firebase:
+- Execute: `npx firebase login:list`
+- If no user listed: Execute `npx firebase login` (browser auth required)
 
-   Save the project ID from output.
+4. **Create Firebase project**
+
+   Generate unique project ID:
+   - Execute: `date +%s` (get timestamp)
+   - Construct project ID: `<project-name>-<timestamp>`
+
+   Execute: `npx firebase projects:create <project-id> --display-name "<display-name>"`
+
+   **Validation**: Parse output for "Firebase project <project-id> is ready!"
+
+   **Save** the project ID from output for all subsequent commands.
 
 5. **Register web application**
-   ```bash
-   npx firebase apps:create WEB "[App Name]" --project [project-id]
-   ```
 
-   Save the app ID from output.
+   Execute: `npx firebase apps:create WEB "<app-name>" --project <project-id>`
+
+   **Validation**: Parse output for "App ID: 1:xxxxx:web:xxxxx"
+
+   **Extract and save** the app ID from output (format: `1:123456789:web:abcdef123456`).
 
 6. **Retrieve SDK configuration**
-   ```bash
-   npx firebase apps:sdkconfig WEB [app-id] --project [project-id]
-   ```
 
-   Copy all configuration values from output.
+   Execute: `npx firebase apps:sdkconfig WEB <app-id> --project <project-id>`
+
+   **Critical**: Parse the entire JSON output containing:
+   - `apiKey`
+   - `authDomain`
+   - `projectId`
+   - `storageBucket`
+   - `messagingSenderId`
+   - `appId`
+
+   **Save all values** - they will be used in step 7.
 
 7. **Create environment file**
 
-   Create `.env`:
+   Using values from step 6, create `.env` file with exact values:
    ```env
-   VITE_FIREBASE_API_KEY=...
-   VITE_FIREBASE_AUTH_DOMAIN=...
-   VITE_FIREBASE_PROJECT_ID=...
-   VITE_FIREBASE_STORAGE_BUCKET=...
-   VITE_FIREBASE_MESSAGING_SENDER_ID=...
-   VITE_FIREBASE_APP_ID=...
+   VITE_FIREBASE_API_KEY=<apiKey-from-step-6>
+   VITE_FIREBASE_AUTH_DOMAIN=<authDomain-from-step-6>
+   VITE_FIREBASE_PROJECT_ID=<projectId-from-step-6>
+   VITE_FIREBASE_STORAGE_BUCKET=<storageBucket-from-step-6>
+   VITE_FIREBASE_MESSAGING_SENDER_ID=<messagingSenderId-from-step-6>
+   VITE_FIREBASE_APP_ID=<appId-from-step-6>
    ```
 
-   Create `.env.example` (same structure, placeholder values).
+   **Validation**: Execute `cat .env` to verify all values are populated.
+
+   Create `.env.example` with placeholder values:
+   ```env
+   VITE_FIREBASE_API_KEY=your_api_key_here
+   VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+   VITE_FIREBASE_PROJECT_ID=your_project_id
+   VITE_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
+   VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+   VITE_FIREBASE_APP_ID=your_app_id
+   ```
 
 8. **Create Firebase configuration files**
 
-   Create `.firebaserc`:
+   Create `.firebaserc` using project ID from step 4:
    ```json
    {
      "projects": {
-       "default": "[project-id]"
+       "default": "<project-id>"
      }
    }
    ```
+
+   **Validation**: Execute `cat .firebaserc | grep <project-id>` to verify project ID is correct.
 
    Create `firebase.json`:
    ```json
@@ -128,11 +185,15 @@ See `firebase-cli.md` for complete Firebase CLI workflow.
    }
    ```
 
+   **Validation**: Execute `cat firebase.json | grep firestore` to verify both hosting and firestore are configured.
+
 ### Phase 3: Firestore Database Configuration
+
+**Mandatory**: Read `component-patterns.md` completely for Firestore integration patterns.
 
 9. **Create Firestore security rules**
 
-   Create `firestore.rules`:
+   Create `firestore.rules` file with user-specific data isolation:
    ```
    rules_version = '2';
    service cloud.firestore {
@@ -161,17 +222,26 @@ See `firebase-cli.md` for complete Firebase CLI workflow.
     }
     ```
 
+    **Validation**: Execute `cat firestore.indexes.json` to verify JSON is valid.
+
 11. **Deploy Firestore configuration**
-    ```bash
-    npx firebase deploy --only firestore:rules,firestore:indexes --project [project-id]
-    ```
 
-    **Important**: This command automatically:
-    - Enables Firestore API
-    - Creates Firestore database
-    - Applies security rules
+    **CRITICAL**: This command creates the Firebase backend. Execute carefully.
 
-    No manual Console steps required.
+    Execute: `npx firebase deploy --only firestore:rules,firestore:indexes --project <project-id>`
+
+    **This command automatically**:
+    - Enables Firestore API (may take 1-2 minutes first time)
+    - Creates Firestore database in default region (us-central)
+    - Applies security rules from `firestore.rules`
+    - Deploys indexes from `firestore.indexes.json`
+
+    **Validation**:
+    - Parse output for "✔ firestore: deployed indexes"
+    - Parse output for "✔ firestore: released rules"
+    - If errors occur, stop and report to user
+
+    **No manual Console steps required** for Firestore setup.
 
 ### Phase 4: Application Implementation
 
@@ -210,18 +280,31 @@ See `firebase-cli.md` for complete Firebase CLI workflow.
 ### Phase 5: Deployment
 
 17. **Build for production**
-    ```bash
-    npm run build
-    ```
 
-    Verify `dist/` directory created successfully.
+    Execute: `npm run build`
+
+    **Validation**:
+    - Check `dist/` directory exists: Execute `ls dist/`
+    - Verify `dist/index.html` exists: Execute `ls dist/index.html`
+    - If build fails, check console errors and fix before proceeding
 
 18. **Deploy to Firebase Hosting**
-    ```bash
-    npx firebase deploy --only hosting --project [project-id]
-    ```
 
-    Save the deployment URL from output: `https://[project-id].web.app`
+    **CRITICAL**: This deploys your application to production.
+
+    Execute: `npx firebase deploy --only hosting --project <project-id>`
+
+    **This command**:
+    - Uploads all files from `dist/` directory
+    - Deploys to Firebase Hosting CDN
+    - Makes app live at `https://<project-id>.web.app`
+
+    **Validation**:
+    - Parse output for "✔ hosting[<project-id>]: release complete"
+    - Parse output for "Hosting URL: https://<project-id>.web.app"
+    - **Extract and save** the deployment URL
+
+    **Report to user**: "✅ Deployed successfully to https://<project-id>.web.app"
 
 ### Phase 6: Authentication Setup
 
